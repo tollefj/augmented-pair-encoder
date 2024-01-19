@@ -34,14 +34,14 @@ def label_sentences(
     """
     sentences = set()
     for sample in train:
-        sentences.update(sample.texts)
-
+        sentences.update(sample.pair)
     sentences = list(sentences)
     sent2idx = {sentence: idx for idx, sentence in enumerate(sentences)}
     duplicates = set((sent2idx[data.pair[0]], sent2idx[data.pair[1]]) for data in train)
 
     sentences = list(sentences)
-    if "e5" in sent_transformer.name:
+    model_name = sent_transformer.tokenizer.name_or_path
+    if "e5" in model_name:
         logger.info("Adding 'query:' prefix to sentences")
         query_sents = [f"query: {s}" for s in sentences]
 
@@ -52,7 +52,7 @@ def label_sentences(
         show_progress_bar=verbose,
     )
     weak_data = []
-    logging.info(f"Performing weak supervision with {sent_transformer}...")
+    logging.info(f"Performing weak supervision with {model_name}...")
     for idx in range(len(sentences)):
         sentence_embedding = embeddings[idx]
         cos_scores = cos_sim(sentence_embedding, embeddings)[0]

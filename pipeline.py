@@ -8,7 +8,7 @@ from scipy.stats import spearmanr
 
 def run(
     model_name: str,
-    similarity_model: str,
+    similarity_model: str = None,
     batch_size: int = 32,
     learning_rate: float = 2e-5,
     epochs: int = 3,

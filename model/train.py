@@ -17,7 +17,7 @@ def train_encoder(
     train_samples: List[PairInput],
     evaluator: CorrelationEvaluator = None,
     model_name: str = "cross-encoder/stsb-roberta-base",
-    similarity_model: str = "intfloat/e5-base-v2",
+    similarity_model: str = None,
     batch_size: int = 32,
     learning_rate=8e-5,
     epochs=10,
@@ -43,7 +43,7 @@ def train_encoder(
     }
     logging.info(logging_param)
 
-    if k > 0:
+    if k > 0 and similarity_model:
         logging.info("Training encoder for 1 epoch prior to weak supervision...")
         dataloader = DataLoader(train_samples, shuffle=True, batch_size=batch_size)
         encoder.fit(
@@ -55,14 +55,13 @@ def train_encoder(
             verbose=verbose,
         )
         logging.info("Weakly labeling sentences...")
-        sent_transformer = SentenceTransformer(similarity_model)
+        sent_transformer = SentenceTransformer(similarity_model, device=device)
         weak_samples = label_sentences(
             sent_transformer=sent_transformer,
             encoder=encoder,
-            train_samples=train_samples,
+            train=train_samples,
             top_k=k,
             batch_size=batch_size,
-            device=device,
         )
         train_samples += weak_samples
 
