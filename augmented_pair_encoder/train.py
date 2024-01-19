@@ -4,11 +4,11 @@ from datetime import datetime
 from math import ceil
 from typing import List
 
+from augmented_pair_encoder.evaluation import CorrelationEvaluator
+from augmented_pair_encoder.model import PairEncoder
+from augmented_pair_encoder.util import PairInput
+from augmented_pair_encoder.weak_supervision import label_sentences
 from fire import Fire
-from model.evaluation import CorrelationEvaluator
-from model.model import PairEncoder
-from model.util import PairInput
-from model.weak_supervision import label_sentences
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
 

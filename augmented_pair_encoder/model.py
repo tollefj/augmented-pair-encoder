@@ -4,8 +4,8 @@ from typing import List
 
 import numpy as np
 import torch
-from model.evaluation import CorrelationEvaluator
-from model.util import get_scheduler, init_optimizer
+from augmented_pair_encoder.evaluation import CorrelationEvaluator
+from augmented_pair_encoder.util import get_scheduler, init_optimizer
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import tqdm, trange
@@ -63,7 +63,6 @@ class PairEncoder:
         We sample only as many batches from each objective as there are
         in the smallest one to make sure of equal training with each dataset.
         """
-        # set_seed(seed)
         self.model.to(self.device)
         dataloader.collate_fn = lambda x: self.batching(x)
 

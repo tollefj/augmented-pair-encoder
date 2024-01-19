@@ -2,8 +2,8 @@ import logging
 from typing import List
 
 import torch
-from model.model import PairEncoder
-from model.util import PairInput
+from augmented_pair_encoder.model import PairEncoder
+from augmented_pair_encoder.util import PairInput
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import cos_sim
 

@@ -1,5 +1,5 @@
 import numpy as np
-from model.util import PairInput
+from augmented_pair_encoder.util import PairInput
 
 sources = {
     "stsb": "mteb/stsbenchmark-sts",

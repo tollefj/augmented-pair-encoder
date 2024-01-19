@@ -1,7 +1,7 @@
 import logging
 from typing import List, Tuple
 
-from model.util import PairInput
+from augmented_pair_encoder.util import PairInput
 from scipy.stats import pearsonr, spearmanr
 
 logger = logging.getLogger(__name__)

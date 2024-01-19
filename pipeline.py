@@ -1,8 +1,8 @@
+from augmented_pair_encoder.data import process_sts
+from augmented_pair_encoder.evaluation import CorrelationEvaluator
+from augmented_pair_encoder.train import train_encoder
 from datasets import load_dataset
 from fire import Fire
-from model.data import process_sts
-from model.evaluation import CorrelationEvaluator
-from model.train import train_encoder
 from scipy.stats import spearmanr
 
 
