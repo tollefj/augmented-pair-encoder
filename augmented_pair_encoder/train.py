@@ -4,35 +4,42 @@ from datetime import datetime
 from math import ceil
 from typing import List
 
+from fire import Fire
+from sentence_transformers import SentenceTransformer
+from torch.utils.data import DataLoader
+
 from augmented_pair_encoder.evaluation import CorrelationEvaluator
 from augmented_pair_encoder.model import PairEncoder
 from augmented_pair_encoder.util import PairInput
 from augmented_pair_encoder.weak_supervision import label_sentences
-from fire import Fire
-from sentence_transformers import SentenceTransformer
-from torch.utils.data import DataLoader
 
 
 def train_encoder(
     train_samples: List[PairInput],
     evaluator: CorrelationEvaluator = None,
-    model_name: str = "cross-encoder/stsb-roberta-base",
+    model_name: str = "bert-base-uncased",
     similarity_model: str = None,
     batch_size: int = 32,
     learning_rate=8e-5,
     epochs=10,
     eval_steps=0,  # if 0, evaluate after each epoch
+    max_length=128,
     k=0,
+    weak_training_epochs=1,  # if k>0, train a weak model for this many epochs before weak supervision
+    seed: int = None,
     save_to=None,
     verbose=False,
     device="cuda",
+    logfile=None,
+    timestamp=None,
 ):
-    encoder = PairEncoder(model_name, device=device)
-    starttime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    encoder = PairEncoder(model_name, device=device, max_length=max_length, seed=seed)
+    starttime = timestamp or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     logging.basicConfig(
         format="%(asctime)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO,
+        filename=logfile,
     )
     logging_param = {
         "PairEncoder": model_name,
@@ -49,7 +56,7 @@ def train_encoder(
         encoder.fit(
             dataloader=dataloader,
             evaluator=evaluator,
-            epochs=1,
+            epochs=weak_training_epochs,
             warmup_steps=ceil(len(dataloader) * 1 * 0.1),
             learning_rate=learning_rate,
             verbose=verbose,

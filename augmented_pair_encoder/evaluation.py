@@ -1,8 +1,10 @@
 import logging
 from typing import List, Tuple
 
-from augmented_pair_encoder.util import PairInput
 from scipy.stats import pearsonr, spearmanr
+
+from augmented_pair_encoder.model import PairEncoder
+from augmented_pair_encoder.util import PairInput
 
 logger = logging.getLogger(__name__)
 
@@ -25,3 +27,11 @@ class CorrelationEvaluator:
                 Correlation ({self.corr.__name__}):\t{corr:.4f}"
         )
         return corr
+
+
+def get_correlation(test: List[PairInput], pair_encoder: PairEncoder) -> float:
+    test_data = [p.pair for p in test]
+    test_scores = [p.label for p in test]
+    preds = pair_encoder.predict(test_data)
+    corr = spearmanr(test_scores, preds).correlation
+    return corr

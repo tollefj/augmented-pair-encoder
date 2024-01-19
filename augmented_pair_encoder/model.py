@@ -4,12 +4,13 @@ from typing import List
 
 import numpy as np
 import torch
-from augmented_pair_encoder.evaluation import CorrelationEvaluator
-from augmented_pair_encoder.util import get_scheduler, init_optimizer
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import tqdm, trange
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
+
+from augmented_pair_encoder.evaluation import CorrelationEvaluator
+from augmented_pair_encoder.util import get_scheduler, init_optimizer
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class PairEncoder:
         model_name: str,
         max_length: int = 512,
         device: str = None,
+        seed: int = None,
     ):
         self.config = AutoConfig.from_pretrained(model_name)
         self.config.num_labels = 1
@@ -42,6 +44,9 @@ class PairEncoder:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
+        
+        if isinstance(seed, int):
+            set_seed(seed)
 
     def fit(
         self,
