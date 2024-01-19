@@ -1,0 +1,5 @@
+scikit-learn
+fire
+datasets
+numpy
+sentence-transformers
