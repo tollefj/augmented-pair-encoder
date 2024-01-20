@@ -17,6 +17,8 @@ from augmented_pair_encoder.weak_supervision import label_sentences
 def train_encoder(
     train_samples: List[PairInput],
     evaluator: CorrelationEvaluator = None,
+    logfile=None,
+    timestamp=None,
     model_name: str = "bert-base-uncased",
     similarity_model: str = None,
     batch_size: int = 32,
@@ -30,8 +32,6 @@ def train_encoder(
     save_to=None,
     verbose=False,
     device="cuda",
-    logfile=None,
-    timestamp=None,
 ):
     encoder = PairEncoder(model_name, device=device, max_length=max_length, seed=seed)
     starttime = timestamp or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

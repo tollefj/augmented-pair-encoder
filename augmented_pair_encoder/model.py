@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import List
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -44,7 +44,7 @@ class PairEncoder:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
-        
+
         if isinstance(seed, int):
             set_seed(seed)
 
@@ -61,7 +61,7 @@ class PairEncoder:
         max_grad_norm: float = 1,
         verbose: bool = True,
         output_path: str = None,
-    ):
+    ) -> None:
         """
         Train the model with the given training objective
         Each training objective is sampled in turn for one batch.
@@ -103,9 +103,13 @@ class PairEncoder:
                     labels,
                 )
                 loss.backward()
+                # Clip the gradients to prevent them from becoming too large
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
+                # Update the model parameters based on the gradients and the learning rate
                 optimizer.step()
+                # Zero out the gradients to prevent them from accumulating
                 optimizer.zero_grad()
+                # Update the learning rate
                 scheduler.step()
 
                 _steps += 1
@@ -135,7 +139,9 @@ class PairEncoder:
             logger.info(f"Saving final model to {output_path}")
             self.save(output_path)
 
-    def batching(self, batch, train=True):
+    def batching(
+        self, batch, train=True
+    ) -> Union[Dict[str, torch.Tensor], Tuple[Dict[str, torch.Tensor], torch.Tensor]]:
         pairs = [[] for _ in range(len(batch[0].pair if train else batch[0]))]
         labels = []
 
@@ -161,7 +167,7 @@ class PairEncoder:
 
         return (tokenized, labels) if train else tokenized
 
-    def predict(self, sentences: List[List[str]], batch_size=32):
+    def predict(self, sentences: List[List[str]], batch_size=32) -> np.ndarray:
         if isinstance(sentences[0], str):
             raise ValueError(
                 "Input must be a list of lists of strings (i.e. a list of sentence pairs)"
@@ -184,7 +190,7 @@ class PairEncoder:
                 )
         return np.asarray([score[0].cpu().detach().numpy() for score in preds])
 
-    def save(self, path):
+    def save(self, path: str) -> None:
         if path is None:
             return
         logger.info("Save model to {}".format(path))
