@@ -2,10 +2,11 @@ import logging
 from typing import List
 
 import torch
-from augmented_pair_encoder.model import PairEncoder
-from augmented_pair_encoder.util import PairInput
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import cos_sim
+
+from augmented_pair_encoder.model import PairEncoder
+from augmented_pair_encoder.util import PairInput
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,12 @@ def label_sentences(
         for _, _id in zip(top_results[0], top_results[1]):
             if _id != idx and (_id, idx) not in duplicates:
                 weak_data.append((sentences[idx], sentences[_id]))
+                # calculate the similarity between sentences[idx] and sentences[_id]
+                # _source = sentences[idx]
+                # _target = sentences[_id]
                 duplicates.add((idx, _id))
+
+    # use the sentence-transformer model to calculate the cosine-similarity (0-1) between the sentences:
 
     weak_scores = encoder.predict(weak_data)
     assert all(0.0 <= score <= 1.0 for score in weak_scores)

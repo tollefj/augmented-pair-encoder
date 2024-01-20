@@ -66,11 +66,17 @@ def init_optimizer(
     )
 
 
+warmups = {
+    "linear": get_linear_schedule_with_warmup,
+    "cosine": get_cosine_schedule_with_warmup,
+}
+
+
 def get_scheduler(
     warmup_steps: int,
     train_steps: int,
     optimizer=torch.optim.AdamW,
-    cosine: bool = False,
+    warmup_type: str = "linear",
 ) -> torch.optim.lr_scheduler.LambdaLR:
     """
     Returns a scheduler for adjusting the learning rate during training.
@@ -84,9 +90,7 @@ def get_scheduler(
     Returns:
         torch.optim.lr_scheduler.LambdaLR: The scheduler for adjusting the learning rate during training.
     """
-    warmup_fn = (
-        get_cosine_schedule_with_warmup if cosine else get_linear_schedule_with_warmup
-    )
+    warmup_fn = warmups[warmup_type]
     return warmup_fn(
         optimizer=optimizer,
         num_warmup_steps=warmup_steps,

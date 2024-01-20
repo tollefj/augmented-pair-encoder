@@ -55,6 +55,7 @@ class PairEncoder:
         default_optimizer=torch.optim.AdamW,
         epochs: int = 1,
         learning_rate: float = 2e-5,
+        warmup: str = "linear",
         warmup_steps: int = 10000,
         weight_decay: float = 0.01,  # default, AdamW
         evaluation_steps: int = 0,
@@ -81,7 +82,7 @@ class PairEncoder:
             warmup_steps=warmup_steps,
             train_steps=int(len(dataloader) * epochs),
             optimizer=optimizer,
-            cosine=False,
+            warmup_type=warmup,
         )
 
         best_score = -1
