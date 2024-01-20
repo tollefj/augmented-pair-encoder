@@ -35,6 +35,7 @@ def train_encoder(
 ):
     encoder = PairEncoder(model_name, device=device, max_length=max_length, seed=seed)
     starttime = timestamp or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs(os.path.dirname(logfile), exist_ok=True)
     logging.basicConfig(
         format="%(asctime)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
