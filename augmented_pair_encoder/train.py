@@ -16,6 +16,7 @@ from augmented_pair_encoder.weak_supervision import label_sentences
 
 def train_encoder(
     train_samples: List[PairInput],
+    upscaling_samples: List[PairInput] = None,
     evaluator: CorrelationEvaluator = None,
     logfile=None,
     timestamp=None,
@@ -51,23 +52,28 @@ def train_encoder(
     }
     logging.info(logging_param)
 
+    logging.info(f"All params:\n{locals().items()}")
+
     if k > 0 and similarity_model:
-        logging.info("Training encoder for 1 epoch prior to weak supervision...")
         dataloader = DataLoader(train_samples, shuffle=True, batch_size=batch_size)
-        encoder.fit(
-            dataloader=dataloader,
-            evaluator=evaluator,
-            epochs=weak_training_epochs,
-            warmup_steps=ceil(len(dataloader) * 1 * 0.1),
-            learning_rate=learning_rate,
-            verbose=verbose,
-        )
+        if weak_training_epochs > 0:
+            logging.info("Training encoder for 1 epoch prior to weak supervision...")
+            encoder.fit(
+                dataloader=dataloader,
+                evaluator=evaluator,
+                epochs=weak_training_epochs,
+                warmup_steps=ceil(len(dataloader) * 1 * 0.1),
+                learning_rate=learning_rate,
+                verbose=verbose,
+            )
         logging.info("Weakly labeling sentences...")
         sent_transformer = SentenceTransformer(similarity_model, device=device)
+        # upscale the adversarial validation samples (ROC_AUC > 0.4)
+        weak_sample_distribution = upscaling_samples or train_samples
         weak_samples = label_sentences(
             sent_transformer=sent_transformer,
             encoder=encoder,
-            train=train_samples,
+            train=weak_sample_distribution,
             top_k=k,
             batch_size=batch_size,
         )
