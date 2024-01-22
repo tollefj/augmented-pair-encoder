@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import datetime
 from math import ceil
@@ -18,12 +17,12 @@ def train_encoder(
     train_samples: List[PairInput],
     upscaling_samples: List[PairInput] = None,
     evaluator: CorrelationEvaluator = None,
-    logfile=None,
     timestamp=None,
     model_name: str = "bert-base-uncased",
     similarity_model: str = None,
     batch_size: int = 32,
     learning_rate=8e-5,
+    max_grad_norm=1.0,
     epochs=10,
     eval_steps=0,  # if 0, evaluate after each epoch
     max_length=128,
@@ -36,28 +35,10 @@ def train_encoder(
 ):
     encoder = PairEncoder(model_name, device=device, max_length=max_length, seed=seed)
     starttime = timestamp or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    os.makedirs(os.path.dirname(logfile), exist_ok=True)
-    logging.basicConfig(
-        format="%(asctime)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        level=logging.INFO,
-        filename=logfile,
-    )
-    logging_param = {
-        "PairEncoder": model_name,
-        "batch": batch_size,
-        "lr": learning_rate,
-        "epochs": epochs,
-        "k": k,
-    }
-    logging.info(logging_param)
-
-    logging.info(f"All params:\n{locals().items()}")
 
     if k > 0 and similarity_model:
         dataloader = DataLoader(train_samples, shuffle=True, batch_size=batch_size)
         if weak_training_epochs > 0:
-            logging.info("Training encoder for 1 epoch prior to weak supervision...")
             encoder.fit(
                 dataloader=dataloader,
                 evaluator=evaluator,
@@ -66,14 +47,13 @@ def train_encoder(
                 learning_rate=learning_rate,
                 verbose=verbose,
             )
-        logging.info("Weakly labeling sentences...")
         sent_transformer = SentenceTransformer(similarity_model, device=device)
         # upscale the adversarial validation samples (ROC_AUC > 0.4)
-        weak_sample_distribution = upscaling_samples or train_samples
         weak_samples = label_sentences(
             sent_transformer=sent_transformer,
             encoder=encoder,
-            train=weak_sample_distribution,
+            # if no upscaling samples, use the train samples
+            train=upscaling_samples or train_samples,
             top_k=k,
             batch_size=batch_size,
         )
@@ -90,6 +70,7 @@ def train_encoder(
         dataloader=dataloader,
         evaluator=evaluator,
         epochs=epochs,
+        max_grad_norm=max_grad_norm,
         warmup_steps=ceil(len(dataloader) * epochs * 0.1),
         learning_rate=learning_rate,
         verbose=verbose,
