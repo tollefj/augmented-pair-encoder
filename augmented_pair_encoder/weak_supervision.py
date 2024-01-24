@@ -44,10 +44,12 @@ def label_sentences(
     model_name = sent_transformer.tokenizer.name_or_path
     if "e5" in model_name:
         logger.info("Adding 'query:' prefix to sentences")
-        query_sents = [f"query: {s}" for s in sentences]
+        train_sents = [f"query: {s}" for s in sentences]
+    else:
+        train_sents = sentences
 
     embeddings = sent_transformer.encode(
-        query_sents,
+        train_sents,
         batch_size=batch_size,
         convert_to_tensor=True,
         show_progress_bar=verbose,

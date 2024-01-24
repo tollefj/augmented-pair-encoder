@@ -48,7 +48,6 @@ def train_encoder(
                 verbose=verbose,
             )
         sent_transformer = SentenceTransformer(similarity_model, device=device)
-        # upscale the adversarial validation samples (ROC_AUC > 0.4)
         weak_samples = label_sentences(
             sent_transformer=sent_transformer,
             encoder=encoder,
@@ -71,6 +70,7 @@ def train_encoder(
         evaluator=evaluator,
         epochs=epochs,
         max_grad_norm=max_grad_norm,
+        warmup="cosine",
         warmup_steps=ceil(len(dataloader) * epochs * 0.1),
         learning_rate=learning_rate,
         verbose=verbose,
