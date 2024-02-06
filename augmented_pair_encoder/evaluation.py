@@ -28,7 +28,7 @@ class CorrelationEvaluator:
         return corr
 
 
-def get_correlation(test: List[PairInput], pair_encoder: "PairEncoder") -> float:
+def get_correlation(test: List[PairInput], pair_encoder) -> float:
     test_data = [p.pair for p in test]
     test_scores = [p.label for p in test]
     preds = pair_encoder.predict(test_data)

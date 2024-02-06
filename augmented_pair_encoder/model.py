@@ -63,12 +63,6 @@ class PairEncoder:
         verbose: bool = True,
         output_path: str = None,
     ) -> None:
-        """
-        Train the model with the given training objective
-        Each training objective is sampled in turn for one batch.
-        We sample only as many batches from each objective as there are
-        in the smallest one to make sure of equal training with each dataset.
-        """
         self.model.to(self.device)
         dataloader.collate_fn = lambda x: self.batching(x)
 
@@ -98,21 +92,15 @@ class PairEncoder:
                 smoothing=0.05,
                 disable=not verbose,
             ):
-                # set view(-1) to flatten the labels as we have only one class
                 loss = nn.BCEWithLogitsLoss()(
                     self.model(**features, return_dict=True).logits.view(-1),
                     labels,
                 )
                 loss.backward()
-                # Clip the gradients to prevent them from becoming too large
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
-                # Update the model parameters based on the gradients and the learning rate
                 optimizer.step()
-                # Zero out the gradients to prevent them from accumulating
                 optimizer.zero_grad()
-                # Update the learning rate
                 scheduler.step()
-
                 _steps += 1
 
                 if (
